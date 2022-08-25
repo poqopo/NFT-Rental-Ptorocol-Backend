@@ -16,7 +16,7 @@ setInterval(async () => {
 
 const rentcontract = new caver.klay.Contract(
   rentjson.abi,
-  "0x1c496f3cE52534238bee5E6E18Ac230BBe5530ff"
+  "0x208291a2279882Cb6aC238977735eddd5d6e283C"
 );
 
 

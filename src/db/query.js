@@ -1,6 +1,5 @@
 import pg from "pg";
 import Caver from "caver-js";
-import "ipfs";
 import erc721json from "../../ERC721.json" assert { type: "json" }
 
 
@@ -30,7 +29,7 @@ export default function query(result) {
         const contents = data.returnValues
 
         client
-        .query(query, [contents.collection_address.toString(), parseInt(contents.token_id), contents.holder_address.toString(), contents.collateral_token.toString(), parseInt(contents.collateral_amount), parseInt(contents.max_rent_duration), parseInt(contents.rent_fee_per_block)])
+        .query(query, [contents.collection_address.toString(), parseInt(contents.token_id), contents.from_address.toString(), contents.collateral_token.toString(), parseInt(contents.collateral_amount), parseInt(contents.max_rent_duration), parseInt(contents.rent_fee_per_block)])
         .then((res) => {
             console.log('LISTEDNFT UPSERT successfully!');
             // client.end(console.log('Closed client connection'));
@@ -39,6 +38,25 @@ export default function query(result) {
         .then(() => {
             console.log('Finished execution, exiting now');
         })
+    }
+
+    const NFTModify = (data) => {
+      console.log("find NFTmodify event")
+    
+      const query = 'INSERT INTO public."ListedNFT" (collection_address, token_id, collateral_amount, max_rent_duration, rent_fee_per_block) VALUES($1,$2,$3,$4,$5) ON CONFLICT ' +
+                    '(collection_address, token_id) DO UPDATE SET collateral_amount=$3, max_rent_duration=$4, rent_fee_per_block=$5'
+      const contents = data.returnValues
+
+      client
+      .query(query, [contents.collection_address.toString(), parseInt(contents.token_id), parseInt(contents.input[1]), parseInt(contents.input[0]), parseInt(contents.input[2])])
+      .then((res) => {
+          console.log('MODIFIEDNFT UPSERT successfully!');
+          // client.end(console.log('Closed client connection'));
+      })
+      .catch(err => console.log(err))
+      .then(() => {
+          console.log('Finished execution, exiting now');
+      })
     }
 
     const NFTinfo = async (data) => {
@@ -122,10 +140,44 @@ export default function query(result) {
         })
     }
 
-    
+    const NFTrent = (data) => {
+      console.log("find NFTrent event")
+  
+      const query =
+      'INSERT INTO public."RentedNFT" (collection_address, token_id, renter_accounts, rent_block, rent_duration, rent_fee) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT ' +
+      "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, renter_accounts=$3, rent_block=$4, rent_duration=$5, rent_fee=$6";
+      const contents = data.returnValues
+
+      client
+      .query(query, [contents.collection_address.toString(), parseInt(contents.token_id), contents.from_address.toString(), parseInt(contents.rented_block), parseInt(contents.rent_duration), parseInt(contents.rent_fee)])
+      .then((res) => {
+          console.log('RENTED UPSERT successfully!');
+      })
+      .catch(err => console.log(err))
+      .then(() => {
+          console.log('Finished execution, exiting now');
+      })
+  }
+
+    const Transaction = (data) => {
+    console.log("find transaction event")
+
+    const query =
+    'INSERT INTO public."transaction" (tx_hash, collection_address, token_id, from_address, event, transaction_block) VALUES($1,$2,$3,$4,$5,$6)'
+    const contents = data.returnValues
+
+    client
+    .query(query, [data.transactionHash ,contents.collection_address, parseInt(contents.token_id), contents.from_address, data.event, parseInt(data.blockNumber)])
+    .then((res) => {
+        console.log('INSERT transaction successfully!');
+    })
+    .catch(err => console.log(err))
+    .then(() => {
+        console.log('Finished execution, exiting now');
+    })
+}
     
     function queryDatabase(data) {
-        console.log("receive data")
     
         if (data.event === "NFTlist") {
             NFTinfo(data)
@@ -134,8 +186,18 @@ export default function query(result) {
         if (data.event === "NFTlistcancel") {
             NFTcancel(data)
         }
+
+        if (data.event === "NFTrented") {
+            NFTrent(data)
+        }
+
+        if (data.event === "NFTlistmodified") {
+          NFTModify(data)
+        }
+
+        Transaction(data)
     
-    }
+  }
 }
 
 
