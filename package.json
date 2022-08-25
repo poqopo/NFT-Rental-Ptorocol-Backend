@@ -1,0 +1,17 @@
+{
+  "name": "nft-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "collect": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "caver-js": "^1.9.0",
+    "pg": "^8.7.3"
+  }
+}
