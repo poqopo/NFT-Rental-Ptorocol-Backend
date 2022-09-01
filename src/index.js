@@ -23,5 +23,4 @@ const rentcontract = new caver.klay.Contract(
 rentcontract.events.allEvents({}, (err, result) => {
   console.log("send data to database")
   query(result)
-  // console.log(result.returnValues)
 });
