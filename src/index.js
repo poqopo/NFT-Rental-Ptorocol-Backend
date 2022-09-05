@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/NFTinfo", async (req, res) => {
+app.get("/api/NFT/listed", async (req, res) => {
   const client = await connection();
   client.query(
     'SELECT LIST.*, NFT.nft_name, NFT.nft_image, NFT.description FROM public."ListedNFT" as LIST INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id',
@@ -22,7 +22,7 @@ app.get("/api/NFTinfo", async (req, res) => {
   );
 });
 
-app.get("/api/Kickinfo", async (req, res) => {
+app.get("/api/NFT/rented", async (req, res) => {
   const client = await connection();
   client.query(
     'SELECT RENT.*, NFT.nft_name, NFT.nft_image, NFT.description FROM public."RentedNFT" as RENT INNER JOIN  public."NFT" as NFT ON RENT.collection_address = NFT.collection_address and RENT.token_id = NFT.token_id',
@@ -39,8 +39,6 @@ app.get("/api/Kickinfo", async (req, res) => {
 app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
   if (req.params.detail === "Rent") {
     const client = await connection();
-
-    console.log(req.params.contractaddress)
 
     const listinfo = await client.query(
       `select * FROM public."ListedNFT" as LIST WHERE collection_address = '${req.params.contractaddress}' and token_id = ${req.params.tokenid}`
@@ -66,12 +64,14 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
     res.send([nftinfo.rows, listinfo.rows, rentinfo.rows]);
   } 
 });
-app.get("/api/mypage/:UserAddress", async (req, res) => {
+app.get("/api/NFT/:UserAddress", async (req, res) => {
   const client = await connection();
   const rentinfo = await client.query(
-    `SELECT RENT.*, NFT.nft_name, NFT.nft_image, NFT.description FROM public."RentedNFT" as RENT INNER JOIN  public."NFT" as NFT ON RENT.collection_address = NFT.collection_address and RENT.token_id = NFT.token_id WHERE RENT.renter_accounts = '${req.params.UserAddress}'`
+    `SELECT RENT.*, NFT.nft_name, NFT.nft_image, NFT.description 
+     FROM public."RentedNFT" as RENT 
+     INNER JOIN  public."NFT" as NFT ON RENT.collection_address = NFT.collection_address and RENT.token_id = NFT.token_id
+      WHERE RENT.renter_accounts = '${req.params.UserAddress}'`
   );
-  console.log(req.path.UserAddress);
   const listinfo = await client.query(
     `SELECT 
       LIST.*, NFT.nft_name, NFT.nft_image, NFT.description 
@@ -79,8 +79,9 @@ app.get("/api/mypage/:UserAddress", async (req, res) => {
       INNER JOIN  public."NFT" as NFT ON (LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id)
     WHERE LIST.holder_account = '${req.params.UserAddress}'`
   )
-
-  res.send([listinfo.rows, rentinfo.rows]);
+    const result = [] 
+    await result.push(rentinfo.rows[0], listinfo.rows[0])
+  res.send(result);
 });
 
 // http listen port 생성 서버 실행
