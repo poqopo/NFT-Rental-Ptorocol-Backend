@@ -47,8 +47,11 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
       `select * FROM public."NFT" as NFT WHERE collection_address = '${req.params.contractaddress}' and token_id = ${req.params.tokenid}`
     );
 
-    res.send([nftinfo.rows, listinfo.rows]);
-  } else   if (req.params.detail === "Kick") {
+    const result = [] 
+    await result.push(rentinfo.rows[0], listinfo.rows[0])
+
+    res.send(result);
+  } else if (req.params.detail === "Kick") {
     const client = await connection();
 
     const listinfo = await client.query(
@@ -61,7 +64,12 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
       `select * FROM public."RentedNFT" WHERE collection_address = '${req.params.contractaddress}' and token_id = ${req.params.tokenid}`
     );
 
-    res.send([nftinfo.rows, listinfo.rows, rentinfo.rows]);
+
+    const result = [] 
+    await result.push(rentinfo.rows[0], listinfo.rows[0], nftinfo.rows[0])
+    console.log(result)
+
+    res.send(result);
   } 
 });
 app.get("/api/NFT/:UserAddress", async (req, res) => {
