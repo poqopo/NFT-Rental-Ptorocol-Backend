@@ -17,6 +17,7 @@ app.get("/api/NFT/listed", async (req, res) => {
         console.log("데이터 가져오기 실패");
       } else {
         res.send(rows.rows);
+        client.end()
       }
     }
   );
@@ -31,6 +32,7 @@ app.get("/api/NFT/rented", async (req, res) => {
         console.log("데이터 가져오기 실패");
       } else {
         res.send(rows.rows);
+        client.end()
       }
     }
   );
@@ -47,11 +49,12 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
       `select * FROM public."NFT" as NFT WHERE collection_address = '${req.params.contractaddress}' and token_id = ${req.params.tokenid}`
     );
 
-    const result = [] 
-    await result.push(rentinfo.rows[0], listinfo.rows[0])
-
+    const result = await Object.assign(nftinfo.rows[0], listinfo.rows[0])
     res.send(result);
-  } else if (req.params.detail === "Kick") {
+    client.end()
+
+
+  } else {
     const client = await connection();
 
     const listinfo = await client.query(
@@ -64,13 +67,10 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
       `select * FROM public."RentedNFT" WHERE collection_address = '${req.params.contractaddress}' and token_id = ${req.params.tokenid}`
     );
 
-
-    const result = [] 
-    await result.push(rentinfo.rows[0], listinfo.rows[0], nftinfo.rows[0])
-    console.log(result)
-
+    const result = await Object.assign(nftinfo.rows[0], listinfo.rows[0], rentinfo.rows[0])
     res.send(result);
-  } 
+    client.end()
+  }
 });
 app.get("/api/NFT/:UserAddress", async (req, res) => {
   const client = await connection();
@@ -87,9 +87,10 @@ app.get("/api/NFT/:UserAddress", async (req, res) => {
       INNER JOIN  public."NFT" as NFT ON (LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id)
     WHERE LIST.holder_account = '${req.params.UserAddress}'`
   )
-    const result = [] 
-    await result.push(rentinfo.rows[0], listinfo.rows[0])
+
+    const result = [...listinfo.rows, ...rentinfo.rows]
   res.send(result);
+  client.end()
 });
 
 // http listen port 생성 서버 실행
