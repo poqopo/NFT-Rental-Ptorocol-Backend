@@ -5,9 +5,9 @@ import erc721json from "../../ERC721.json" assert { type: "json" }
 
 export default function query(result) {
     const config = {
-        host: 'localhost',
+        host: 'ls-b24c2551f8052c71c0c44d92efc079203b9c0789.c9wknlpud9ss.us-east-1.rds.amazonaws.com',
         user: 'test',     
-        password: 'test',
+        password: '12341234',
         database: 'postgres',
         port: 5432,
     };

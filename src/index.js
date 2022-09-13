@@ -3,7 +3,7 @@ import Caver from "caver-js";
 import query from "./db/query.js";
 
 const websocketProvider = new Caver.providers.WebsocketProvider(
-  "wss://public-node-api.klaytnapi.com/v1/baobab/ws"
+  "wss://KASKLSEBOUNN9ZOB6LTNJY2K:nEVH0IteI8xRfgktkbjjsSTBN0onuqgLSsHvZazH@node-api.klaytnapi.com/v1/ws/open?chain-id=1001"
 );
 
 const caver = new Caver(websocketProvider);
@@ -21,6 +21,5 @@ const rentcontract = new caver.klay.Contract(
 
 
 rentcontract.events.allEvents({}, (err, result) => {
-  console.log("send data to database")
   query(result)
 });
