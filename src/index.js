@@ -37,6 +37,23 @@ app.get("/api/NFT/rented", async (req, res) => {
     }
   );
 });
+app.get("/api/NFT/search/:collectionname", async (req, res) => {
+
+  const client = await connection();
+
+  console.log(req.params)
+
+
+  const iteminfo = await client.query(
+    `SELECT LIST.*, NFT.nft_name, NFT.nft_image
+    FROM public."ListedNFT" as LIST
+    INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id
+    WHERE NFT.nft_name = '${req.params.collectionname}'`
+  )
+    const result = iteminfo.rows
+  res.send(result);
+  client.end()
+});
 
 app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
   if (req.params.detail === "Rent") {
@@ -54,7 +71,8 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
     client.end()
 
 
-  } else {
+  }
+   else if (req.params.detail === "Kick")  {
     const client = await connection();
 
     const listinfo = await client.query(
@@ -73,25 +91,35 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
   }
 });
 app.get("/api/NFT/:UserAddress", async (req, res) => {
+
+  // console.log(req.params)
   const client = await connection();
-  const rentinfo = await client.query(
-    `SELECT RENT.*, NFT.nft_name, NFT.nft_image, NFT.description 
-     FROM public."RentedNFT" as RENT 
-     INNER JOIN  public."NFT" as NFT ON RENT.collection_address = NFT.collection_address and RENT.token_id = NFT.token_id
-      WHERE RENT.renter_accounts = '${req.params.UserAddress}'`
-  );
-  const listinfo = await client.query(
-    `SELECT 
-      LIST.*, NFT.nft_name, NFT.nft_image, NFT.description 
-    FROM public."ListedNFT" as LIST 
-      INNER JOIN  public."NFT" as NFT ON (LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id)
+  // const rentinfo = await client.query(
+  //   `SELECT RENT.*, NFT.nft_name, NFT.nft_image, NFT.description 
+  //    FROM public."RentedNFT" as RENT 
+  //    INNER JOIN  public."NFT" as NFT ON RENT.collection_address = NFT.collection_address and RENT.token_id = NFT.token_id
+  //     WHERE RENT.renter_accounts = '${req.params.UserAddress}'`
+  // );
+  // const listinfo = await client.query(
+  //   `SELECT 
+  //     LIST.*, NFT.nft_name, NFT.nft_image, NFT.description 
+  //   FROM public."ListedNFT" as LIST 
+  //     INNER JOIN  public."NFT" as NFT ON (LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id)
+  //   WHERE LIST.holder_account = '${req.params.UserAddress}'`
+  // )
+
+  const iteminfo = await client.query(
+    `SELECT LIST.*, NFT.nft_name, NFT.nft_image
+    FROM public."ListedNFT" as LIST
+    INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id
     WHERE LIST.holder_account = '${req.params.UserAddress}'`
   )
-
-    const result = [...listinfo.rows, ...rentinfo.rows]
+    const result = iteminfo.rows
   res.send(result);
   client.end()
 });
+
+
 
 // http listen port 생성 서버 실행
 app.listen(4000, () => console.log("제발 돼라"));
