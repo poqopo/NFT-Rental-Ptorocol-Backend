@@ -28,8 +28,8 @@ export default function query(result) {
 
   const NFTlist = async (data) => {
     const query =
-      'INSERT INTO public."ListedNFT" (collection_address, token_id, holder_account, collateral_token, collateral_amount, max_rent_duration, rent_fee_per_block) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT ' +
-      "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, holder_account=$3, collateral_token=$4, collateral_amount=$5, max_rent_duration=$6, rent_fee_per_block=$7";
+      'INSERT INTO public."ListedNFT" (collection_address, token_id, holder_account, collateral_token, collateral_amount, max_rent_duration, rent_fee_per_block) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT ' +
+      "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, holder_account=$3, collateral_token=$4, collateral_amount=$5, max_rent_duration=$6, rent_fee_per_block=$7, link=$8";
     const contents = data.returnValues;
 
     client
@@ -41,6 +41,7 @@ export default function query(result) {
         parseInt(contents.collateral_amount),
         parseInt(contents.max_rent_duration),
         parseInt(contents.rent_fee_per_block),
+        "Rent",
       ])
       .then((res) => {
         console.log("LISTEDNFT UPSERT successfully!");
@@ -54,28 +55,33 @@ export default function query(result) {
 
   const NFTModify = (data) => {
     console.log("find NFTmodify event");
+    const OPTIONS = [
+      "max_rent_duration",
+      "collateral_amount",
+      "rent_fee_per_block",
+    ];
 
-    const query =
-      'INSERT INTO public."ListedNFT" (collection_address, token_id, collateral_amount, max_rent_duration, rent_fee_per_block) VALUES($1,$2,$3,$4,$5) ON CONFLICT ' +
-      "(collection_address, token_id) DO UPDATE SET collateral_amount=$3, max_rent_duration=$4, rent_fee_per_block=$5";
-    const contents = data.returnValues;
+    data.parameter.map((i, index) => {
+      const query = `UPDATE public."listedNFT" SET ${
+        OPTIONS[data.parameter[index]]
+      } = $3, WHERE (collection_address = $1, token_id = $2)`;
+      const contents = data.returnValues;
 
-    client
-      .query(query, [
-        contents.collection_address.toString(),
-        parseInt(contents.token_id),
-        parseInt(contents.input[1]),
-        parseInt(contents.input[0]),
-        parseInt(contents.input[2]),
-      ])
-      .then((res) => {
-        console.log("MODIFIEDNFT UPSERT successfully!");
-        // client.end(console.log('Closed client connection'));
-      })
-      .catch((err) => console.log(err))
-      .then(() => {
-        console.log("Finished execution, exiting now");
-      });
+      client
+        .query(query, [
+          contents.collection_address.toString(),
+          parseInt(contents.token_id),
+          parseInt(contents.input[index]),
+        ])
+        .then((res) => {
+          console.log("MODIFIEDNFT UPSERT successfully!");
+          // client.end(console.log('Closed client connection'));
+        })
+        .catch((err) => console.log(err))
+        .then(() => {
+          console.log("Finished execution, exiting now");
+        });
+    });
   };
 
   const NFTinfo = async (data) => {
@@ -159,7 +165,7 @@ export default function query(result) {
       .catch((err) => console.log(err))
       .then(() => {
         console.log("Finished execution, exiting now");
-    });
+      });
   };
 
   const NFTrent = (data) => {
@@ -186,6 +192,20 @@ export default function query(result) {
       .then(() => {
         console.log("Finished execution, exiting now");
       });
+
+    const query1 = `UPDATE public."listedNFT" SET link="Kick" WHERE (collection_address = $1, token_id = $2)`;
+
+    client.query(query1, [
+      contents.collection_address.toString(),
+      parseInt(contents.token_id),
+    ])
+    .then((res) => {
+      console.log("RENTED UPSERT successfully!");
+    })
+    .catch((err) => console.log(err))
+    .then(() => {
+      console.log("Finished execution, exiting now");
+    });
   };
 
   const Transaction = (data) => {
@@ -246,9 +266,8 @@ export default function query(result) {
       .catch((err) => console.log(err))
       .then(() => {
         console.log("Finished execution, exiting now");
-    });
+      });
   };
-
 
   function queryDatabase(data) {
     if (data.event === "NFTlist") {
@@ -265,10 +284,8 @@ export default function query(result) {
 
     if (data.event === "NFTlistmodified") {
       NFTModify(data);
-    }
-
-    else {
-      Endtransaction(data)
+    } else {
+      Endtransaction(data);
     }
 
     Transaction(data);
