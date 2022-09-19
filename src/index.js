@@ -41,9 +41,6 @@ app.get("/api/NFT/search/:collectionname", async (req, res) => {
 
   const client = await connection();
 
-  console.log(req.params)
-
-
   const iteminfo = await client.query(
     `SELECT LIST.*, NFT.nft_name, NFT.nft_image
     FROM public."ListedNFT" as LIST
