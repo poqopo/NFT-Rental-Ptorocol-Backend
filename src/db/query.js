@@ -22,9 +22,9 @@ export default function query(result) {
     }
   });
 
-  const NFTlist = async (data) => {
+  const NFTlist = (data) => {
     const query =
-      'INSERT INTO public."ListedNFT" (collection_address, token_id, holder_account, collateral_token, collateral_amount, max_rent_duration, rent_fee_per_block) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT ' +
+      'INSERT INTO public."ListedNFT" (collection_address, token_id, holder_account, collateral_token, collateral_amount, max_rent_duration, rent_fee_per_block, link) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT ' +
       "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, holder_account=$3, collateral_token=$4, collateral_amount=$5, max_rent_duration=$6, rent_fee_per_block=$7, link=$8";
     const contents = data.returnValues;
 
@@ -33,11 +33,11 @@ export default function query(result) {
         contents.collection_address.toLowerCase(),
         parseInt(contents.token_id),
         contents.from_address.toLowerCase(),
-        contents.collateral_token.toString(),
+        contents.collateral_token.toLowerCase(),
         parseInt(contents.collateral_amount),
         parseInt(contents.max_rent_duration),
         parseInt(contents.rent_fee_per_block),
-        "Rent",
+        "Rent"
       ])
       .then((res) => {
         console.log("LISTEDNFT UPSERT successfully!");
@@ -60,12 +60,12 @@ export default function query(result) {
     data.parameter.map((i, index) => {
       const query = `UPDATE public."listedNFT" SET ${
         OPTIONS[data.parameter[index]]
-      } = $3, WHERE (collection_address = $1, token_id = $2)`;
+      } = $3, WHERE (collection_address = $1 and token_id = $2)`;
       const contents = data.returnValues;
 
       client
         .query(query, [
-          contents.collection_address.toString(),
+          contents.collection_address.toLowerCase(),
           parseInt(contents.token_id),
           parseInt(contents.input[index]),
         ])
@@ -102,7 +102,7 @@ export default function query(result) {
             "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, nft_name=$3, nft_image=$4, description=$5";
           client
             .query(query, [
-              contents.collection_address,
+              contents.collection_address.toLowerCase(),
               parseInt(contents.token_id),
               data[0].name,
               "https://ipfs.io/ipfs/" + data[0].image.split("ipfs://")[1],
@@ -126,7 +126,7 @@ export default function query(result) {
             "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, nft_name=$3, nft_image=$4, description=$5";
           client
             .query(query, [
-              contents.collection_address,
+              contents.collection_address.toLowerCase(),
               parseInt(contents.token_id),
               data[0].name,
               data[0].image,
@@ -152,7 +152,7 @@ export default function query(result) {
 
     client
       .query(query, [
-        contents.collection_address.toString(),
+        contents.collection_address.toLowerCase(),
         parseInt(contents.token_id),
       ])
       .then((res) => {
@@ -174,7 +174,7 @@ export default function query(result) {
 
     client
       .query(query, [
-        contents.collection_address.toString(),
+        contents.collection_address.toLowerCase(),
         parseInt(contents.token_id),
         contents.from_address.toLowerCase(),
         parseInt(contents.rented_block),
@@ -189,10 +189,10 @@ export default function query(result) {
         console.log("Finished execution, exiting now");
       });
 
-    const query1 = `UPDATE public."listedNFT" SET link="Kick" WHERE (collection_address = $1, token_id = $2)`;
+    const query1 = `UPDATE public."listedNFT" SET link="Kick" WHERE collection_address = $1 and token_id = $2`;
 
     client.query(query1, [
-      contents.collection_address.toString(),
+      contents.collection_address.toLowerCase(),
       parseInt(contents.token_id),
     ])
     .then((res) => {
@@ -214,7 +214,7 @@ export default function query(result) {
     client
       .query(query, [
         data.transactionHash,
-        contents.collection_address,
+        contents.collection_address.toLowerCase(),
         parseInt(contents.token_id),
         contents.from_address.toLowerCase(),
         data.event,
@@ -233,12 +233,12 @@ export default function query(result) {
     console.log(`find ${data.event} event`);
 
     const query =
-      'delete from public."RentedNFT" where (collection_address =$1, token_id=$2)';
+      'delete from public."RentedNFT" where collection_address =$1 and token_id=$2';
     const contents = data.returnValues;
 
     client
       .query(query, [
-        contents.collection_address.toString(),
+        contents.collection_address.toLowerCase(),
         parseInt(contents.token_id),
       ])
       .then((res) => {
@@ -253,7 +253,7 @@ export default function query(result) {
       'DELETE FROM public."ListedNFT" WHERE collection_address=$1 AND token_id=$2';
     client
       .query(query1, [
-        contents.collection_address.toString(),
+        contents.collection_address.toLowerCase(),
         parseInt(contents.token_id),
       ])
       .then((res) => {
@@ -265,10 +265,10 @@ export default function query(result) {
       });
   };
 
-  function queryDatabase(data) {
+  async function queryDatabase(data) {
     if (data.event === "NFTlist") {
-      NFTinfo(data);
       NFTlist(data);
+      NFTinfo(data)
     }
     if (data.event === "NFTlistcancel") {
       NFTcancel(data);
