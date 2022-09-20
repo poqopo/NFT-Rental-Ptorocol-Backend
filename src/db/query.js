@@ -22,23 +22,24 @@ export default function query(result) {
     }
   });
 
-  const NFTlist = (data) => {
+  const NFTlist = async (data) => {
     const query =
       'INSERT INTO public."ListedNFT" (collection_address, token_id, holder_account, collateral_token, collateral_amount, max_rent_duration, rent_fee_per_block, link) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT ' +
       "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, holder_account=$3, collateral_token=$4, collateral_amount=$5, max_rent_duration=$6, rent_fee_per_block=$7, link=$8";
-    const contents = data.returnValues;
 
-    client
-      .query(query, [
-        contents.collection_address.toLowerCase(),
-        parseInt(contents.token_id),
-        contents.from_address.toLowerCase(),
-        contents.collateral_token.toLowerCase(),
-        parseInt(contents.collateral_amount),
-        parseInt(contents.max_rent_duration),
-        parseInt(contents.rent_fee_per_block),
-        "Rent"
-      ])
+    const contents = await data.returnValues;
+
+    await client
+    .query(query, [
+      contents.collection_address,
+      contents.token_id,
+      contents.from_address.toLowerCase(),
+      contents.collateral_token,
+      contents.collateral_amount,
+      contents.max_rent_duration,
+      contents.rent_fee_per_block,
+      "Rent"
+    ])
       .then((res) => {
         console.log("LISTEDNFT UPSERT successfully!");
         // client.end(console.log('Closed client connection'));
@@ -48,6 +49,7 @@ export default function query(result) {
         console.log("Finished execution, exiting now");
       });
   };
+
 
   const NFTModify = (data) => {
     console.log("find NFTmodify event");
@@ -102,7 +104,7 @@ export default function query(result) {
             "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, nft_name=$3, nft_image=$4, description=$5";
           client
             .query(query, [
-              contents.collection_address.toLowerCase(),
+              contents.collection_address,
               parseInt(contents.token_id),
               data[0].name,
               "https://ipfs.io/ipfs/" + data[0].image.split("ipfs://")[1],
@@ -126,7 +128,7 @@ export default function query(result) {
             "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, nft_name=$3, nft_image=$4, description=$5";
           client
             .query(query, [
-              contents.collection_address.toLowerCase(),
+              contents.collection_address,
               parseInt(contents.token_id),
               data[0].name,
               data[0].image,
@@ -152,7 +154,7 @@ export default function query(result) {
 
     client
       .query(query, [
-        contents.collection_address.toLowerCase(),
+        contents.collection_address,
         parseInt(contents.token_id),
       ])
       .then((res) => {
@@ -164,17 +166,17 @@ export default function query(result) {
       });
   };
 
-  const NFTrent = (data) => {
+  const NFTrent = async (data) => {
     console.log("find NFTrent event");
 
     const query =
       'INSERT INTO public."RentedNFT" (collection_address, token_id, renter_accounts, rent_block, rent_duration, rent_fee) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT ' +
       "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, renter_accounts=$3, rent_block=$4, rent_duration=$5, rent_fee=$6";
-    const contents = data.returnValues;
+    const contents = await data.returnValues;
 
-    client
+    await client
       .query(query, [
-        contents.collection_address.toLowerCase(),
+        contents.collection_address,
         parseInt(contents.token_id),
         contents.from_address.toLowerCase(),
         parseInt(contents.rented_block),
@@ -189,11 +191,12 @@ export default function query(result) {
         console.log("Finished execution, exiting now");
       });
 
-    const query1 = `UPDATE public."listedNFT" SET link="Kick" WHERE collection_address = $1 and token_id = $2`;
+    const query1 = `UPDATE public."ListedNFT" SET link='Kick' WHERE collection_address=$1 AND token_id=$2`;
 
     client.query(query1, [
-      contents.collection_address.toLowerCase(),
+      contents.collection_address,
       parseInt(contents.token_id),
+
     ])
     .then((res) => {
       console.log("RENTED UPSERT successfully!");
@@ -214,9 +217,9 @@ export default function query(result) {
     client
       .query(query, [
         data.transactionHash,
-        contents.collection_address.toLowerCase(),
+        contents.collection_address,
         parseInt(contents.token_id),
-        contents.from_address.toLowerCase(),
+        contents.from_address,
         data.event,
         parseInt(data.blockNumber),
       ])
@@ -238,7 +241,7 @@ export default function query(result) {
 
     client
       .query(query, [
-        contents.collection_address.toLowerCase(),
+        contents.collection_address,
         parseInt(contents.token_id),
       ])
       .then((res) => {
@@ -253,7 +256,7 @@ export default function query(result) {
       'DELETE FROM public."ListedNFT" WHERE collection_address=$1 AND token_id=$2';
     client
       .query(query1, [
-        contents.collection_address.toLowerCase(),
+        contents.collection_address,
         parseInt(contents.token_id),
       ])
       .then((res) => {
@@ -270,15 +273,15 @@ export default function query(result) {
       NFTlist(data);
       NFTinfo(data)
     }
-    if (data.event === "NFTlistcancel") {
+    else if (data.event === "NFTlistcancel") {
       NFTcancel(data);
     }
 
-    if (data.event === "NFTrented") {
+    else if (data.event === "NFTrented") {
       NFTrent(data);
     }
 
-    if (data.event === "NFTlistmodified") {
+    else if (data.event === "NFTlistmodified") {
       NFTModify(data);
     } else {
       Endtransaction(data);
