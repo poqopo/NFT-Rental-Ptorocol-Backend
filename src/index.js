@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/NFT/listed", async (req, res) => {
   const client = await connection();
   client.query(
-    'SELECT LIST.*, NFT.nft_name, NFT.nft_image, NFT.description FROM public."ListedNFT" as LIST INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id',
+    'SELECT LIST.*, NFT.nft_name, NFT.nft_image, NFT.description FROM public."ListedNFT" as LIST INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id WHERE link="Rent"',
     (err, rows, fields) => {
       if (err) {
         console.log("데이터 가져오기 실패");
@@ -69,7 +69,7 @@ app.get("/api/:contractaddress/:tokenid/:detail", async (req, res) => {
 
 
   }
-   else if (req.params.detail === "Kick")  {
+   else {
     const client = await connection();
 
     const listinfo = await client.query(
@@ -91,28 +91,21 @@ app.get("/api/NFT/:UserAddress", async (req, res) => {
 
   // console.log(req.params)
   const client = await connection();
-  // const rentinfo = await client.query(
-  //   `SELECT RENT.*, NFT.nft_name, NFT.nft_image, NFT.description 
-  //    FROM public."RentedNFT" as RENT 
-  //    INNER JOIN  public."NFT" as NFT ON RENT.collection_address = NFT.collection_address and RENT.token_id = NFT.token_id
-  //     WHERE RENT.renter_accounts = '${req.params.UserAddress}'`
-  // );
-  // const listinfo = await client.query(
-  //   `SELECT 
-  //     LIST.*, NFT.nft_name, NFT.nft_image, NFT.description 
-  //   FROM public."ListedNFT" as LIST 
-  //     INNER JOIN  public."NFT" as NFT ON (LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id)
-  //   WHERE LIST.holder_account = '${req.params.UserAddress}'`
-  // )
-
-  const iteminfo = await client.query(
-    `SELECT LIST.*, NFT.nft_name, NFT.nft_image
-    FROM public."ListedNFT" as LIST
-    INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id
+  const rentinfo = await client.query(
+    `SELECT RENT.*, NFT.nft_name, NFT.nft_image, NFT.description 
+     FROM public."RentedNFT" as RENT 
+     INNER JOIN  public."NFT" as NFT ON RENT.collection_address = NFT.collection_address and RENT.token_id = NFT.token_id
+      WHERE RENT.renter_accounts = '${req.params.UserAddress}'`
+  );
+  const listinfo = await client.query(
+    `SELECT 
+      LIST.*, NFT.nft_name, NFT.nft_image, NFT.description 
+    FROM public."ListedNFT" as LIST 
+      INNER JOIN  public."NFT" as NFT ON (LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id)
     WHERE LIST.holder_account = '${req.params.UserAddress}'`
   )
-    const result = iteminfo.rows
-  res.send(result);
+    
+  res.send([...rentinfo.rows, ...listinfo.rows]);
   client.end()
 });
 
