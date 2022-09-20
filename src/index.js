@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/NFT/listed", async (req, res) => {
   const client = await connection();
   client.query(
-    'SELECT LIST.*, NFT.nft_name, NFT.nft_image, NFT.description FROM public."ListedNFT" as LIST INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id WHERE link="Rent"',
+    `SELECT LIST.*, NFT.nft_name, NFT.nft_image, NFT.description FROM public."ListedNFT" as LIST INNER JOIN  public."NFT" as NFT ON LIST.collection_address = NFT.collection_address and LIST.token_id = NFT.token_id WHERE link='Rent'`,
     (err, rows, fields) => {
       if (err) {
         console.log("데이터 가져오기 실패");
