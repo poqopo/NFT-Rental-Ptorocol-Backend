@@ -51,7 +51,7 @@ export default function query(result) {
   };
 
 
-  const NFTModify = (data) => {
+  const NFTModify = async (data) => {
     console.log("find NFTmodify event");
     const OPTIONS = [
       "max_rent_duration",
@@ -59,17 +59,18 @@ export default function query(result) {
       "rent_fee_per_block",
     ];
 
-    data.parameter.map((i, index) => {
-      const query = `UPDATE public."listedNFT" SET ${
-        OPTIONS[data.parameter[index]]
-      } = $3, WHERE (collection_address = $1 and token_id = $2)`;
-      const contents = data.returnValues;
+    const contents = await data.returnValues;
+
+    contents.parameter.map((i, index) => {
+      const query = `UPDATE public."ListedNFT" SET ${
+        OPTIONS[i]
+      } = $3 WHERE collection_address = $1 and token_id = $2`;
 
       client
         .query(query, [
-          contents.collection_address.toLowerCase(),
+          contents.collection_address,
           parseInt(contents.token_id),
-          parseInt(contents.input[index]),
+          parseInt(contents.input[index])
         ])
         .then((res) => {
           console.log("MODIFIEDNFT UPSERT successfully!");
@@ -98,7 +99,6 @@ export default function query(result) {
       fetch("https://ipfs.io/ipfs/" + url.split("ipfs://")[1])
         .then((response) => response.json())
         .then((data) => {
-          console.log(data[0]);
           const query =
             'INSERT INTO public."NFT" (collection_address, token_id, nft_name, nft_image, description) VALUES($1,$2,$3,$4,$5) ON CONFLICT ' +
             "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, nft_name=$3, nft_image=$4, description=$5";
@@ -106,9 +106,9 @@ export default function query(result) {
             .query(query, [
               contents.collection_address,
               parseInt(contents.token_id),
-              data[0].name,
-              "https://ipfs.io/ipfs/" + data[0].image.split("ipfs://")[1],
-              data[0].description,
+              data.name,
+              "https://ipfs.io/ipfs/" + data.image.split("ipfs://")[1],
+              data.description,
             ])
             .then((res) => {
               console.log("NFT UPSERT successfully!");
@@ -122,7 +122,6 @@ export default function query(result) {
       fetch(url)
         .then((response) => response.json())
         .then((data) => {
-          console.log(data.name);
           const query =
             'INSERT INTO public."NFT" (collection_address, token_id, nft_name, nft_image, description) VALUES($1,$2,$3,$4,$5) ON CONFLICT ' +
             "(collection_address, token_id) DO UPDATE SET collection_address=$1, token_id=$2, nft_name=$3, nft_image=$4, description=$5";
@@ -130,9 +129,9 @@ export default function query(result) {
             .query(query, [
               contents.collection_address,
               parseInt(contents.token_id),
-              data[0].name,
-              data[0].image,
-              data[0].description,
+              data.name,
+              data.image,
+              data.description,
             ])
             .then((res) => {
               console.log("NFT UPSERT successfully!");
