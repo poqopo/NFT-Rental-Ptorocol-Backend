@@ -8,6 +8,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/', (req, res)=>{
+  res.json({test:'1'})
+})
+
 app.get("/api/NFT/listed", async (req, res) => {
   const client = await connection();
   client.query(
