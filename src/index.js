@@ -1,6 +1,6 @@
 import rentjson from "../RentERC721.json" assert { type: "json" };
 import Caver from "caver-js";
-import query from "./db/query.js";
+import query from "./query.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -14,7 +14,7 @@ const caver = new Caver(websocketProvider);
 setInterval(async () => {
   const block = await caver.rpc.klay.getBlockNumber();
   console.log(block);
-}, "59000");
+}, "50000");
 
 const rentcontract = new caver.klay.Contract(
   rentjson.abi,
