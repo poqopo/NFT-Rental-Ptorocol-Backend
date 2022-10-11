@@ -1,7 +1,9 @@
 import rentjson from "../RentERC721.json" assert { type: "json" };
+import erc721json from "../ERC721.json" assert { type: "json" };
 import Caver from "caver-js";
-import query from "./query.js";
+import {batchTransferEvent, getNFTmetadata, contractEvent, transferEvent} from "./query.js";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const websocketProvider = new Caver.providers.WebsocketProvider(
@@ -20,8 +22,25 @@ const rentcontract = new caver.klay.Contract(
   rentjson.abi,
   process.env.contract_address
 );
+const NFTcontract = new caver.klay.Contract(
+  erc721json.abi,
+  process.env.nft_address
+)
+
 
 
 rentcontract.events.allEvents({}, (err, result) => {
-  query(result)
+  contractEvent(result)
 });
+// NFTcontract.events.Transfer({}, (err, result) => {
+//   transferEvent(result)
+// });
+
+// NFTcontract.getPastEvents('Transfer' , {fromBlock : 103532662, toBlock: 'latest'}, (err, result) => {
+//   batchTransferEvent(result)
+// })
+
+getNFTmetadata("0x0b2b71f9540ca79f410b47847049102968d00fa6", 0)
+
+
+
