@@ -2,7 +2,7 @@ import pg from "pg";
 import dotenv from "dotenv";
 dotenv.config();
 
-export function connection() {
+export default function connection() {
   const config = {
     host: process.env.host,
     user: process.env.user,

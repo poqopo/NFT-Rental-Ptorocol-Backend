@@ -1,12 +1,18 @@
 import express from "express";
-import { connection } from "./query.js";
 import cors from "cors";
+import NFT from "./router/nft"
+import collection from "./router/collection"
+import user from "./router/user"
+
 //express 사용
 const app = express();
 app.use(cors());
 //Express 4.16.0버전 부터 body-parser의 일부 기능이 익스프레스에 내장 body-parser 연결
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/NFT', NFT)
+app.use('/collection', collection)
+app.use('/user', user)
 
 app.get('/', (req, res)=>{
   res.json({test:'1'})
