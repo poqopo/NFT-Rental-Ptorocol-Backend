@@ -5,16 +5,19 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    
     "collect": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nodemon --watch src/ src/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.20.1",
     "caver-js": "^1.9.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
+    "nodemon": "^2.0.20",
     "pg": "^8.7.3"
   }
 }

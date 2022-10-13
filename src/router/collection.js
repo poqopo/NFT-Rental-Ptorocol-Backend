@@ -1,6 +1,52 @@
 import express from "express";
-import connection from "../connection";
+import connection from "../connection.js";
 const router = express.Router();
+
+router.get("/collections", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+    `SELECT * FROM collection`
+  );
+
+  res.send(result.rows);
+  client.end();
+});
+
+router.get("/nfts/:collectionddress", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+    `SELECT * FROM collection 
+        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
+        WHERE collection.collection_address = '${req.params.collectionddress}'`
+  );
+
+  res.send(result.rows);
+  client.end();
+});
+
+router.get("/listed/:collectionddress", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+    `SELECT * FROM collection 
+        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
+        WHERE collection.collection_address = '${req.params.collectionddress}' and rentinfo.renter_address is NULL`
+  );
+
+  res.send(result.rows);
+  client.end();
+});
+
+router.get("/rented/:collectionddress", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+    `SELECT * FROM collection 
+        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
+        WHERE collection.collection_address = '${req.params.collectionddress}' and rentinfo.renter_address is NOT NULL`
+  );
+
+  res.send(result.rows);
+  client.end();
+});
 
 router.get("/:collectionddress", async (req, res) => {
   const client = await connection();
@@ -8,14 +54,13 @@ router.get("/:collectionddress", async (req, res) => {
     `SELECT * FROM collection WHERE collection_address = '${req.params.collectionddress}';`
   );
 
-  res.send(result);
+  res.send(result.rows);
   client.end();
 });
 
-//POST 문제
 
 router.post("/:collectionddress", async (req, res) => {
-  const client = await connection();
+  const client = await connection();E
   const query = `UPDATE collection SET, collection_name=$1, collection_description=$2, collection_image=$3, website=$4, discord=$5, twitter=$6;
         `;
   await client
@@ -27,42 +72,6 @@ router.post("/:collectionddress", async (req, res) => {
     .catch((err) => console.log(err));
 
   res.send(result); //뭘 보내야해?
-  client.end();
-});
-
-router.get("/:collectionddress/nfts", async (req, res) => {
-  const client = await connection();
-  const result = await client.query(
-    `SELECT * FROM collection 
-        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
-        WHERE collection.collection_address = '${req.params.collectionddress}'`
-  );
-
-  res.send(result);
-  client.end();
-});
-
-router.get("/:collectionddress/listed", async (req, res) => {
-  const client = await connection();
-  const result = await client.query(
-    `SELECT * FROM collection 
-        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
-        WHERE collection.collection_address = '${req.params.collectionddress}' and rentinfo.renter_address is NULL`
-  );
-
-  res.send(result);
-  client.end();
-});
-
-router.get("/:collectionddress/rented", async (req, res) => {
-  const client = await connection();
-  const result = await client.query(
-    `SELECT * FROM collection 
-        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
-        WHERE collection.collection_address = '${req.params.collectionddress}' and rentinfo.renter_address is NOT NULL`
-  );
-
-  res.send(result);
   client.end();
 });
 

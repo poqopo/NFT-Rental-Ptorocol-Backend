@@ -1,5 +1,5 @@
 import express from "express"
-import connection from "../connection";
+import connection from "../connection.js";
 const router = express.Router();
 
 
@@ -8,7 +8,7 @@ router.get("/:useraddress", async (req, res) => {
     const result = await client.query(
         `SELECT * FROM "user";`
     )
-    res.send(result);
+    res.send(result.rows);
     client.end()    
 })
 
@@ -18,7 +18,7 @@ router.get("/:useraddress/activity", async (req, res) => {
         `SELECT * FROM transaction WHERE transaction.from_address = '${req.params.useraddress}'`
     )
 
-    res.send(result);
+    res.send(result.rows);
     client.end()    
 })
 
@@ -28,7 +28,7 @@ router.get("/:useraddress/NFTs", async (req, res) => {
         `SELECT * FROM nft WHERE owner = '${req.params.useraddress}'`
     )
 
-    res.send(result);
+    res.send(result.rows);
     client.end()    
 })
 
