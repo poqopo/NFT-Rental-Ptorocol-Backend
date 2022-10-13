@@ -40,7 +40,6 @@ rentcontract.events.allEvents({}, (err, result) => {
 //   batchTransferEvent(result)
 // })
 
-getNFTmetadata("0x0b2b71f9540ca79f410b47847049102968d00fa6", 0)
 
 
 
