@@ -54,7 +54,7 @@ router.get("/:collectionddress", async (req, res) => {
     `SELECT * FROM collection WHERE collection_address = '${req.params.collectionddress}';`
   );
 
-  res.send(result.rows);
+  res.send(result.rows[0]);
   client.end();
 });
 
