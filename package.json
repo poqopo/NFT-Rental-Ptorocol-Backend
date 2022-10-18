@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    
-    "collect": "node src/index.js",
+    "collect": "nodemon src/index.js",
     "test": "nodemon --watch src/ src/index.js"
   },
   "author": "",

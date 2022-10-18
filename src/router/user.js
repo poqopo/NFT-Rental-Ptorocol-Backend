@@ -3,32 +3,34 @@ import connection from "../connection.js";
 const router = express.Router();
 
 
+router.get("/activity/:useraddress", async (req, res) => {
+    const client = await connection();
+    const result = await client.query(
+        `SELECT * FROM transaction WHERE transaction.from = '${req.params.useraddress}'`
+    )
+
+    res.send(result.rows);
+    client.end()    
+})
+
+router.get("/nfts/:useraddress", async (req, res) => {
+    const client = await connection();
+    const result = await client.query(
+        `SELECT * FROM nft 
+        INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+        WHERE lender_address = '${req.params.useraddress}' or renter_address = '${req.params.useraddress}'`
+    )
+
+    res.send(result.rows);
+    client.end()    
+})
+
 router.get("/:useraddress", async (req, res) => {
     const client = await connection();
     const result = await client.query(
-        `SELECT * FROM "user";`
+        `SELECT user_address, image, nickname FROM "user" WHERE user_address = '${req.params.useraddress}'`
     )
-    res.send(result.rows);
-    client.end()    
-})
-
-router.get("/:useraddress/activity", async (req, res) => {
-    const client = await connection();
-    const result = await client.query(
-        `SELECT * FROM transaction WHERE transaction.from_address = '${req.params.useraddress}'`
-    )
-
-    res.send(result.rows);
-    client.end()    
-})
-
-router.get("/:useraddress/NFTs", async (req, res) => {
-    const client = await connection();
-    const result = await client.query(
-        `SELECT * FROM nft WHERE owner = '${req.params.useraddress}'`
-    )
-
-    res.send(result.rows);
+    res.send(result.rows[0]);
     client.end()    
 })
 
