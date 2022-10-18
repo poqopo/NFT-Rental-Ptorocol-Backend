@@ -90,7 +90,7 @@ export async function getContractmetadata(collection) {
     .then((response) => response.json())
     .then(async (data) => {
       const query =
-        `INSERT INTO collection (collection_address, collection_name, collection_description, collection_image, website, discord, twitter) VALUES($1,$2,$3,$4,$5,$6,$7) ` +
+        `INSERT INTO collection (collection_address, "name", collection_description, image, website, discord, twitter, banner) VALUES($1,$2,$3,$4,$5,$6,$7) ` +
         `ON CONFLICT (collection_address) DO UPDATE SET collection_name=$2, collection_description=$3, collection_image=$4, website=$5, discord=$6, twitter=$7`;
       await client
         .query(query, [
@@ -202,7 +202,7 @@ export async function endingEvent(result) {
     .query(deletequery, [contents.collection_address, contents.token_id])
     .catch((err) => console.log(err));
   const insertquery = `INSERT INTO "transaction"
-  (tx_hash, from_address, "event", transaction_block, collection_address, token_id, collateral_amount, fee_amount) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+  (tx_hash, from, "event", block, collection_address, token_id, collateral_amount, fee_amount) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
   client
     .query(insertquery, [
       result.transactionHash,
@@ -224,7 +224,7 @@ export async function transaction(result) {
   const client = await connect();
   const contents = await result.returnValues;
   const query =
-    'INSERT INTO public."transaction" (tx_hash, collection_address, token_id, from_address, event, transaction_block) VALUES($1,$2,$3,$4,$5,$6)';
+    'INSERT INTO public."transaction" (tx_hash, collection_address, token_id, from, event, block) VALUES($1,$2,$3,$4,$5,$6)';
   client
     .query(query, [
       result.transactionHash,
