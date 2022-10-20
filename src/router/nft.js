@@ -28,7 +28,7 @@ nftrouter.get("/:collectionddress/:tokenid", async (req, res) => {
 nftrouter.get("/:collectionddress/:tokenid/activity", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT tx_hash, "from", block, "event", collateral_amount, fee_amount FROM transaction 
+    `SELECT tx_hash, "from", "event", block, collateral_amount, fee_amount FROM transaction 
             WHERE collection_address = '${req.params.collectionddress}' and token_id = ${req.params.tokenid}
             ORDER BY block desc limit 5`
   );
@@ -46,6 +46,16 @@ nftrouter.get("/:collectionddress/:tokenid/rentinfo", async (req, res) => {
   res.send(result.rows[0]);
   client.end();
 });
+nftrouter.get("/:collectionddress/:tokenid/getNFTmetadata", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+    `SELECT * FROM rentinfo WHERE collection_address = '${req.params.collectionddress}' and token_id = ${req.params.tokenid}`
+  );
+
+  res.send(result.rows[0]);
+  client.end();
+});
+
 
 
 

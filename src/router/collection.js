@@ -15,7 +15,7 @@ router.get("/collections", async (req, res) => {
 router.get("/nfts/:collectionddress", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM nft WHERE nft.collection_address = '${req.params.collectionddress}'`
+    `SELECT * FROM nft WHERE nft.collection_address = '${req.params.collectionddress}' ORDER BY token_id ASC`
   );
 
   res.send(result.rows);
