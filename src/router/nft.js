@@ -28,7 +28,7 @@ nftrouter.get("/:collectionddress/:tokenid", async (req, res) => {
 nftrouter.get("/:collectionddress/:tokenid/activity", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT tx_hash, "from", "to", block FROM nft_transaction 
+    `SELECT tx_hash, "from", block, "event", collateral_amount, fee_amount FROM transaction 
             WHERE collection_address = '${req.params.collectionddress}' and token_id = ${req.params.tokenid}
             ORDER BY block desc limit 5`
   );
