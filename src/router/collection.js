@@ -23,6 +23,7 @@ router.get("/nfts/:collectionAddress/", async (req, res) => {
 });
 
 router.get("/nfts/:collectionAddress/view/listed", async (req, res) => {
+  console.log(req.query)
   const client = await connection();
   const result = await client.query(
     `SELECT * FROM nft 
