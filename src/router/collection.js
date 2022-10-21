@@ -47,8 +47,7 @@ async function batchTransferEvent(result) {
   });
 }
 
-async function getNFTmetadata(collection, token_id) {
-  const client = await connect();
+async function getNFTmetadata(collection, token_id, client) {
   let url = await getTokenURI(collection, token_id)
   fetch(await checkIPFS(url))
     .then((response) => response.json())
@@ -122,11 +121,14 @@ router.get(
 router.get(
   "/getNFTmetadata/:collectionaddress/:starttokenid/:endtokenid",
   async (req, res) => {
+    const client = await connect();
     for (let i = req.params.starttokenid; i <= req.params.endtokenid; i++) {
-      await getNFTmetadata(req.params.collectionaddress, i)
+      await getNFTmetadata(req.params.collectionaddress, i, client)
     }
     res.send('Success');
+    client.end();
   }
+
 );
 
 router.get(
