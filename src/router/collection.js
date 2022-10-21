@@ -12,44 +12,82 @@ router.get("/collections", async (req, res) => {
   client.end();
 });
 
-router.get("/nfts/:collectionddress", async (req, res) => {
+router.get("/nfts/:collectionAddress", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM nft WHERE nft.collection_address = '${req.params.collectionddress}' ORDER BY token_id ASC`
+    `SELECT * FROM nft WHERE nft.collection_address = '${req.params.collectionAddress}' ORDER BY token_id ASC`
   );
 
   res.send(result.rows);
   client.end();
 });
 
-router.get("/listed/:collectionddress", async (req, res) => {
+router.get("/nfts/:collectionAddress/view/listed", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM collection 
-        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
-        WHERE collection.collection_address = '${req.params.collectionddress}' and rentinfo.renter_address is NULL`
+    `SELECT * FROM nft 
+        INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+        WHERE nft.collection_address = '${req.params.collectionAddress}' and rentinfo.renter_address is NULL`
+  );
+  
+  res.send(result.rows);
+  client.end();
+});
+
+router.get("/nfts/:collectionAddress/view/rented", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+    `SELECT * FROM nft 
+        INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+        WHERE nft.collection_address = '${req.params.collectionAddress}' and rentinfo.renter_address is NOT NULL`
   );
 
   res.send(result.rows);
   client.end();
 });
 
-router.get("/rented/:collectionddress", async (req, res) => {
+router.get("/nfts/:collectionAddress/sort/:sort", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM collection 
-        INNER JOIN rentinfo ON collection.collection_address = rentinfo.collection_address
-        WHERE collection.collection_address = '${req.params.collectionddress}' and rentinfo.renter_address is NOT NULL`
-  );
+      `SELECT * FROM nft 
+      INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+      ORDER BY rentinfo.${req.params.sort} ASC`
+  )
 
   res.send(result.rows);
-  client.end();
-});
-
-router.get("/:collectionddress", async (req, res) => {
+  client.end()    
+})
+router.get("/nfts/:collectionAddress/view/listed/sort/:sort", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM collection WHERE collection_address = '${req.params.collectionddress}';`
+      `SELECT * FROM nft 
+      INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+      WHERE nft.collection_address = '${req.params.collectionAddress}' and rentinfo.renter_address is NULL
+      ORDER BY rentinfo.${req.params.sort} ASC`
+  )
+
+  res.send(result.rows);
+  client.end()    
+})
+router.get("/nfts/:collectionAddress/view/rented/sort/:sort", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+      `SELECT * FROM nft 
+      INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+      WHERE nft.collection_address = '${req.params.collectionAddress}' and rentinfo.renter_address is NOT NULL
+      ORDER BY rentinfo.${req.params.sort} ASC`
+  )
+
+  res.send(result.rows);
+  client.end()    
+})
+
+
+
+router.get("/:collectionAddress", async (req, res) => {
+  const client = await connection();
+  const result = await client.query(
+    `SELECT * FROM collection WHERE collection_address = '${req.params.collectionAddress}';`
   );
 
   res.send(result.rows[0]);
@@ -57,7 +95,7 @@ router.get("/:collectionddress", async (req, res) => {
 });
 
 
-router.post("/:collectionddress", async (req, res) => {
+router.post("/:collectionAddress", async (req, res) => {
   const client = await connection()
   const query = `UPDATE collection SET, collection_name=$1, collection_description=$2, collection_image=$3, website=$4, discord=$5, twitter=$6;
         `;

@@ -18,7 +18,45 @@ router.get("/nfts/:useraddress", async (req, res) => {
     const result = await client.query(
         `SELECT * FROM nft 
         INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
-        WHERE lender_address = '${req.params.useraddress}' or renter_address = '${req.params.useraddress}'`
+        WHERE lender_address = '${req.params.useraddress}' or renter_address = '${req.params.useraddress}' or owner = '${req.params.useraddress}'`
+    )
+
+    res.send(result.rows);
+    client.end()    
+})
+
+router.get("/nfts/:useraddress/view/:view", async (req, res) => {
+    const client = await connection();
+    const result = await client.query(
+        `SELECT * FROM nft 
+        INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+        WHERE ${req.params.view} = '${req.params.useraddress}'`
+    )
+
+    res.send(result.rows);
+    client.end()    
+})
+
+router.get("/nfts/:useraddress/sort/:sort", async (req, res) => {
+    const client = await connection();
+    const result = await client.query(
+        `SELECT * FROM nft 
+        INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+        WHERE lender_address = '${req.params.useraddress}' or renter_address = '${req.params.useraddress}'
+        ORDER BY rentinfo.${req.params.sort} ASC`
+    )
+
+    res.send(result.rows);
+    client.end()    
+})
+
+router.get("/nfts/:useraddress/view/:view/sort/:sort", async (req, res) => {
+    const client = await connection();
+    const result = await client.query(
+        `SELECT * FROM nft 
+        INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+        WHERE ${req.params.view} = '${req.params.useraddress}'
+        ORDER BY rentinfo.${req.params.sort} ASC`
     )
 
     res.send(result.rows);
