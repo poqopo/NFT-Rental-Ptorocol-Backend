@@ -29,7 +29,7 @@ router.get("/nfts/:collectionAddress/view/listed", async (req, res) => {
         INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
         WHERE nft.collection_address = '${req.params.collectionAddress}' and rentinfo.renter_address is NULL`
   );
-  
+
   res.send(result.rows);
   client.end();
 });
@@ -51,6 +51,7 @@ router.get("/nfts/:collectionAddress/sort/:sort", async (req, res) => {
   const result = await client.query(
       `SELECT * FROM nft 
       INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+      WHERE nft.collection_address = '${req.params.collectionAddress}'
       ORDER BY rentinfo.${req.params.sort} ASC`
   )
 
