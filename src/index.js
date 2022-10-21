@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 //Express 4.16.0버전 부터 body-parser의 일부 기능이 익스프레스에 내장 body-parser 연결
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use('/NFT', nftrouter)
+app.use('/nft', nftrouter)
 app.use('/collection', collection)
 app.use('/user', user)
 
@@ -19,4 +19,4 @@ app.get('/', (req, res)=>{
 })
 
 // http listen port 생성 서버 실행
-app.listen(4000, () => console.log("제발 돼라"));
+app.listen(8000, () => console.log("제발 돼라"));
