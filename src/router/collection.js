@@ -19,7 +19,7 @@ async function getNFTmetadata(collection, token_id, client) {
         `(collection_address, token_id) DO UPDATE SET name=$3, description=$4, image=$5, property=$6`;
       await client
         .query(query, [
-          collection,
+          collection.toLowerCase(),
           token_id,
           data.name,
           data.description,
@@ -36,7 +36,7 @@ async function getOwner(collection, token_id, client) {
   const query = `UPDATE nft SET "owner"=$3 WHERE collection_address=$1 AND token_id=$2;`;
   await client
   .query(query, [
-    collection,
+    collection.toLowerCase(),
     token_id,
     owner.toLowerCase(),
   ])
