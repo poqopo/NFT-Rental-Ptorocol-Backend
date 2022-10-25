@@ -10,6 +10,15 @@ export async function getTokenURI(collection_address, token_id) {
   );
   return await erc721.methods.tokenURI(token_id).call();
 }
+export async function getNFTowner(collection_address, token_id) {
+  const caver = await new Caver(process.env.caver);
+
+  const erc721 = await new caver.klay.Contract(
+    erc721json.abi,
+    collection_address
+  );
+  return await erc721.methods.ownerOf(token_id).call();
+}
 
 export async function getContractURI(collection_address) {
   const caver = await new Caver(process.env.caver);
