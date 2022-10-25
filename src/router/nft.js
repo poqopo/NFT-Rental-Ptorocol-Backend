@@ -69,7 +69,6 @@ nftrouter.get("/:collectionaddress/:tokenid/rentinfo", async (req, res) => {
   const result = await client.query(
     `SELECT * FROM rentinfo WHERE collection_address = '${req.params.collectionaddress}' and token_id = ${req.params.tokenid}`
   );
-
   res.send(result.rows[0]);
   client.end();
 });
