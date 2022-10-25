@@ -29,83 +29,6 @@ export async function transferEvent(result) {
     .catch((e) => console.log(e));
 }
 
-export async function batchTransferEvent(result) {
-  const client = await connect();
-  const query = `INSERT INTO nft_transaction (tx_hash, "from", "to", "event", block, collection_address, token_id)VALUES($1, $2, $3, $4, $5, $6, $7)`;
-  const ownerquery = `UPDATE nft "owner"=$3 WHERE collection_address=$1 AND token_id=$2;`;
-  let counter = result.length;
-
-  await result.forEach(async function (data) {
-    const contents = await data.returnValues;
-    await client
-      .query(query, [
-        data.transactionHash,
-        contents.from.toLowerCase(),
-        contents.to.toLowerCase(),
-        data.event,
-        data.blockNumber,
-        data.address,
-        contents.tokenId,
-      ])
-      .catch((e) => console.log(e));
-    await client
-      .query(ownerquery, [
-        result.address,
-        contents.tokenId,
-        contents.to.toLowerCase(),
-      ])
-      .catch((e) => console.log(e));
-    counter--;
-    if (counter == 0) {
-      await console.log("Done!");
-      await client.end(console.log("Closed client connection"));
-    }
-  });
-}
-
-export async function getNFTmetadata(collection, token_id) {
-  const client = await connect();
-  fetch(await checkIPFS(await getTokenURI(collection, token_id)))
-    .then((response) => response.json())
-    .then(async (data) => {
-      const query =
-        `INSERT INTO nft (collection_address, token_id, nft_name, nft_description, nft_image, nft_property) VALUES($1, $2, $3, $4, $5, $6) ON CONFLICT` +
-        `(collection_address, token_id) DO UPDATE SET nft_name=$3, nft_description=$4, nft_image=$5, nft_property=$6`;
-      await client
-        .query(query, [
-          collection,
-          token_id,
-          data.name,
-          data.description,
-          await checkIPFS(data.image),
-          data.attributes,
-        ])
-        .catch((err) => console.log(err));
-    });
-}
-
-export async function getContractmetadata(collection) {
-  const client = await connect();
-  fetch(await checkIPFS(await getContractURI(collection)))
-    .then((response) => response.json())
-    .then(async (data) => {
-      const query =
-        `INSERT INTO collection (collection_address, "name", collection_description, image, website, discord, twitter, banner) VALUES($1,$2,$3,$4,$5,$6,$7) ` +
-        `ON CONFLICT (collection_address) DO UPDATE SET collection_name=$2, collection_description=$3, collection_image=$4, website=$5, discord=$6, twitter=$7`;
-      await client
-        .query(query, [
-          collection,
-          data.name,
-          data.description,
-          await checkIPFS(data.image),
-          data.website,
-          data.discord,
-          data.twitter,
-        ])
-        .catch((err) => console.log(err));
-    });
-}
-
 export async function listEvent(result) {
   const client = await connect();
   const query =
@@ -116,8 +39,8 @@ export async function listEvent(result) {
   await client
     .query(query, [
       contents.from_address.toLowerCase(),
-      contents.collateral_token,
-      contents.collection_address,
+      contents.collateral_token.toLowerCase(),
+      contents.collection_address.toLowerCase(),
       contents.token_id,
       contents.max_rent_duration,
       contents.collateral_amount,
@@ -159,7 +82,7 @@ export async function modifyEvent(result) {
 
   client
     .query(query, [
-      contents.collection_address,
+      contents.collection_address.toLowerCase(),
       contents.token_id,
       contents.input,
     ])
@@ -180,7 +103,7 @@ export async function rentEvent(result) {
   client
     .query(query, [
       contents.from_address.toLowerCase(),
-      contents.collection_address,
+      contents.collection_address.toLowerCase(),
       contents.token_id,
       contents.rent_duration,
       result.blockNumber,
@@ -209,7 +132,7 @@ export async function endingEvent(result) {
       contents.from_address.toLowerCase(),
       result.event,
       result.blockNumber,
-      contents.collection_address,
+      contents.collection_address.toLowerCase(),
       contents.token_id,
       contents.collateral_amount,
       contents.rent_fee,
@@ -223,16 +146,16 @@ export async function endingEvent(result) {
 export async function transaction(result) {
   const client = await connect();
   const contents = await result.returnValues;
-  const query =
-    'INSERT INTO public."transaction" (tx_hash, collection_address, token_id, from, event, block) VALUES($1,$2,$3,$4,$5,$6)';
+  const query = 
+    `INSERT INTO "transaction" (tx_hash, "from", "event", block, collection_address, token_id) VALUES($1,$2,$3,$4,$5,$6)`;
   client
     .query(query, [
       result.transactionHash,
-      contents.collection_address,
-      contents.token_id,
       contents.from_address.toLowerCase(),
       result.event,
       result.blockNumber,
+      contents.collection_address.toLowerCase(),
+      contents.token_id,
     ])
     .then((res) => {
       client.end(console.log("Closed client connection"));
