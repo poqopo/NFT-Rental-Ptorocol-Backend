@@ -1,6 +1,31 @@
 import express, { query } from "express";
 import connection from "../connection.js";
+import { getTokenURI } from "../utils.js";
 const nftrouter = express.Router();
+
+async function getNFTmetadata(collection, token_id, client) {
+  let url = await getTokenURI(collection, token_id)
+  fetch(url)
+    .then((response) => response.json())
+    .then(async (data) => {
+      const attributes = await JSON.stringify(data.attributes)
+      const query =
+        `INSERT INTO nft (collection_address, token_id, name, description, image, property) VALUES($1, $2, $3, $4, $5, $6) ON CONFLICT` +
+        `(collection_address, token_id) DO UPDATE SET name=$3, description=$4, image=$5, property=$6`;
+      await client
+        .query(query, [
+          collection,
+          token_id,
+          data.name,
+          data.description,
+          data.image,
+          attributes,
+        ])
+        .catch((err) => console.log(err));
+
+      await client.end()
+    });
+}
 
 nftrouter.get("/kicklist", async (req, res) => {
   const client = await connection();
@@ -17,21 +42,21 @@ nftrouter.get("/kicklist", async (req, res) => {
   client.end();
 });
 
-nftrouter.get("/:collectionddress/:tokenid", async (req, res) => {
+nftrouter.get("/:collectionaddress/:tokenid", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM nft WHERE collection_address = '${req.params.collectionddress}' and token_id = ${req.params.tokenid}`
+    `SELECT * FROM nft WHERE collection_address = '${req.params.collectionaddress}' and token_id = ${req.params.tokenid}`
   );
 
   res.send(result.rows[0]);
   client.end();
 });
 
-nftrouter.get("/:collectionddress/:tokenid/activity", async (req, res) => {
+nftrouter.get("/:collectionaddress/:tokenid/activity", async (req, res) => {
   const client = await connection();
   const result = await client.query(
     `SELECT tx_hash, "from", "event", block, collateral_amount, fee_amount FROM transaction 
-            WHERE collection_address = '${req.params.collectionddress}' and token_id = ${req.params.tokenid}
+            WHERE collection_address = '${req.params.collectionaddress}' and token_id = ${req.params.tokenid}
             ORDER BY block desc limit 5`
   );
 
@@ -39,25 +64,21 @@ nftrouter.get("/:collectionddress/:tokenid/activity", async (req, res) => {
   client.end();
 });
 
-nftrouter.get("/:collectionddress/:tokenid/rentinfo", async (req, res) => {
+nftrouter.get("/:collectionaddress/:tokenid/rentinfo", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM rentinfo WHERE collection_address = '${req.params.collectionddress}' and token_id = ${req.params.tokenid}`
+    `SELECT * FROM rentinfo WHERE collection_address = '${req.params.collectionaddress}' and token_id = ${req.params.tokenid}`
   );
 
   res.send(result.rows[0]);
   client.end();
 });
 nftrouter.get(
-  "/:collectionddress/:tokenid/getNFTmetadata",
+  "/:collectionaddress/:tokenid/getNFTmetadata",
   async (req, res) => {
     const client = await connection();
-    const result = await client.query(
-      `SELECT * FROM rentinfo WHERE collection_address = '${req.params.collectionddress}' and token_id = ${req.params.tokenid}`
-    );
-
-    res.send(result.rows[0]);
-    client.end();
+    await getNFTmetadata(req.params.collectionaddress, req.params.tokenid, client)
+    await res.send("Success");
   }
 );
 

@@ -9,7 +9,7 @@ import collection from "./router/collection.js"
 const app = express();
 app.use(cors());
 //Express 4.16.0버전 부터 body-parser의 일부 기능이 익스프레스에 내장 body-parser 연결
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/NFT', nftrouter)
 app.use('/collection', collection)
 app.use('/user', user)

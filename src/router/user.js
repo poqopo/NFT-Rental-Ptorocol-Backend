@@ -42,25 +42,14 @@ router.get("/:useraddress", async (req, res) => {
   client.end();
 });
 
-// router.post('/:collectionddress', (req, res) => {
+router.get("/changeInfo/:useraddress", async (req, res) => {
+  const client = await connection();
+  const query = `INSERT INTO "user" (user_address, ${req.query.type}) VALUES($1, $2) ON CONFLICT (user_address) DO UPDATE SET ${req.query.type} = '${req.query.value}';
+`;
+  await client.query(query, [req.params.useraddress, req.query.value]);
 
-//     const course = {
-//         id: courses.length + 1,
-//         name: req.body.name
-//     };
-//     courses.push(course);
-//     res.send(course);
-// });
-
-// router.put('/:collectionddress', (req, res) => {
-//     const course = courses.find(c => c.id === parseInt(req.params.id))
-//     if(!course) return res.status(404).send('The course with the given ID was not found');
-
-//     const { error } = validateCourse(req.body); //result.error
-//     if(error) return res.status(400).send(error.details[0].message);
-
-//     course.name = req.body.name;
-//     res.send(course);
-// });
+  res.send("Success");
+  client.end();
+});
 
 export default router;
