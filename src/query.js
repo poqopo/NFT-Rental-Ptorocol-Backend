@@ -4,28 +4,17 @@ import { getTokenURI, checkIPFS, getContractURI } from "./utils.js";
 
 export async function transferEvent(result) {
   const client = await connect();
-  const query = `INSERT INTO nft_transaction (tx_hash, "from", "to", "event", block, collection_address, token_id)VALUES($1, $2, $3, $4, $5, $6, $7)`;
-
   const contents = await result.returnValues;
-  await client
-    .query(query, [
-      result.transactionHash,
-      contents.from.toLowerCase(),
-      contents.to.toLowerCase(),
-      result.event,
-      result.blockNumber,
-      result.address,
-      contents.tokenId,
-    ])
-    .catch((e) => console.log(e));
-
-  const ownerquery = `UPDATE nft "owner"=$3 WHERE collection_address=$1 AND token_id=$2;`;
+  const ownerquery = `UPDATE nft SET "owner"=$3 WHERE collection_address=$1 AND token_id=$2;`;
   await client
     .query(ownerquery, [
-      result.address,
+      result.address.toLowerCase(),
       contents.tokenId,
       contents.to.toLowerCase(),
     ])
+    .then((res) => {
+      client.end(console.log("Closed client connection"));
+    })
     .catch((e) => console.log(e));
 }
 
@@ -56,11 +45,10 @@ export async function listEvent(result) {
 export async function cancelEvent(result) {
   const client = await connect();
   const query =
-    "DELETE FROM rentinfo WHERE collection_address=$1 AND token_id=$2";
+    "DELETE FROM rentinfo WHERE collection_address = $1 AND token_id = $2";
   const contents = await result.returnValues;
-
   client
-    .query(query, [contents.collection_address, contents.token_id])
+    .query(query, [contents.collection_address.toLowerCase(), contents.token_id])
     .then((res) => {
       transaction(result);
     })
@@ -122,10 +110,10 @@ export async function endingEvent(result) {
     "DELETE FROM rentinfo WHERE collection_address=$1 AND token_id=$2";
 
   client
-    .query(deletequery, [contents.collection_address, contents.token_id])
+    .query(deletequery, [contents.collection_address.toLowerCase(), contents.token_id])
     .catch((err) => console.log(err));
   const insertquery = `INSERT INTO "transaction"
-  (tx_hash, from, "event", block, collection_address, token_id, collateral_amount, fee_amount) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
+  (tx_hash, "from", "event", block, collection_address, token_id, collateral_amount, fee_amount) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`;
   client
     .query(insertquery, [
       result.transactionHash,

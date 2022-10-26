@@ -1,9 +1,8 @@
 import rentjson from "../RentERC721.json" assert { type: "json" };
 import erc721json from "../ERC721.json" assert { type: "json" };
 import Caver from "caver-js";
-import {contractEvent} from "./query.js";
+import {contractEvent, transferEvent} from "./query.js";
 import dotenv from "dotenv";
-
 dotenv.config();
 
 const websocketProvider = new Caver.providers.WebsocketProvider(
@@ -27,7 +26,9 @@ const NFTcontract = new caver.klay.Contract(
   process.env.nft_address
 )
 
-
+NFTcontract.events.Transfer({}, (err, result) => {
+  transferEvent(result)
+})
 
 rentcontract.events.allEvents({}, (err, result) => {
   contractEvent(result)
