@@ -16,12 +16,12 @@ router.get("/nfts/:useraddress", async (req, res) => {
   const client = await connection();
   const view = req.query.view;
   const sort = req.query.sort;
-  const query = `SELECT * FROM nft 
-    INNER JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
-    WHERE ${
+  const query = `SELECT nft.collection_address, nft.token_id, "name", image, "owner" FROM nft 
+    LEFT JOIN rentinfo ON nft.collection_address = rentinfo.collection_address and nft.token_id = rentinfo.token_id
+    ${
       view !== ""
-        ? `${view} = '${req.params.useraddress}'`
-        : `lender_address = '${req.params.useraddress}' or renter_address = '${req.params.useraddress}' or owner = '${req.params.useraddress}'`
+        ? `WHERE ${view} = '${req.params.useraddress}'`
+        : `WHERE lender_address = '${req.params.useraddress}' or renter_address = '${req.params.useraddress}' or owner = '${req.params.useraddress}'`
     } 
      ${sort !== "" ? sort : ""} LIMIT ${req.query.size} offset ${
     (parseInt(req.query.page) - 1) * req.query.size
