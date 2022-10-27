@@ -14,6 +14,7 @@ router.get("/collections", async (req, res) => {
 });
 
 router.get("/nfts/:collectionAddress", async (req, res) => {
+  console.time()
   const view = req.query.view;
   const sort = req.query.sort;
   const client =  connection();
@@ -27,6 +28,7 @@ router.get("/nfts/:collectionAddress", async (req, res) => {
   const result = await client.query(query);
   res.send(result.rows);
   client.end();
+  console.timeEnd()
 });
 
 router.get("/:collectionAddress", async (req, res) => {
