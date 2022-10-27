@@ -45,7 +45,9 @@ nftrouter.get("/kicklist", async (req, res) => {
 nftrouter.get("/:collectionaddress/:tokenid", async (req, res) => {
   const client = await connection();
   const result = await client.query(
-    `SELECT * FROM nft WHERE collection_address = '${req.params.collectionaddress}' and token_id = ${req.params.tokenid}`
+    `SELECT nft.collection_address, token_id, nft.name, nft.description, nft.image, nft.property, "owner", website, discord, twitter FROM nft
+    LEFT JOIN collection ON nft.collection_address = '${req.params.collectionaddress}'
+    WHERE nft.collection_address = '${req.params.collectionaddress}' and nft.token_id = ${req.params.tokenid}`
   );
 
   res.send(result.rows[0]);
